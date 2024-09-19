@@ -57,6 +57,6 @@ public class CustomerRegisterRequest {
 
     private String password;
 
-    @NotNull(message = "Employee ID is mandatory")
+    
      private String employeeId;
 }

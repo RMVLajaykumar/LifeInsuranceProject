@@ -310,7 +310,7 @@ public class PDFService implements IPDFService{
 	        row.add(String.valueOf(policy.getTotalInvestmentAmount()));
 	        row.add(policy.getPaymentInterval().toString()); 
 //	        row.add(String.valueOf(policy.getInstallmentAmount()));
-	        row.add(String.valueOf(policy.getTotalAmountPaid()));
+	        //row.add(String.valueOf(policy.getTotalAmountPaid()));
 //	        row.add(policy.getNextPaymentDate().toString());
 	        data.add(row);
 	    }

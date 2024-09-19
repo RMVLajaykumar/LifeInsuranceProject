@@ -214,6 +214,7 @@ return (
               handleClose={() => setShowCalculateModal(false)}
               installmentAmount={selectedInstallment}
               onProceed={handleProceedToPayment}
+              policy_id={policyId}
             />
             <PaymentProcessModal
               show={showPaymentModal}

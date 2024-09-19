@@ -28,7 +28,7 @@ public class PolicyResponse {
     
     //private int installmentAmount;
     
-    private  Double totalAmountPaid;
+    //private  Double totalAmountPaid;
     
     private PolicyStatus status;
   //  private LocalDate nextPaymentDate;

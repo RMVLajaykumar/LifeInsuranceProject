@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {UnAuthorizedError, InvalidCredentialError, InternalServerError} from '../utils/errors/Error';
+import {UnAuthorizedError, InvalidCredentialError, InternalServerError, NotFoundError} from '../utils/errors/Error';
 
 
 export const verifyAdmin = async (headers = {}) => {
@@ -93,7 +93,11 @@ export const loginService = async (usernameOrEmail, password) => {
     } catch (error) {
         if(error.response && error.response.status === 400){
             throw new InvalidCredentialError("Invalid Credentials");
-        }else {
+        }
+        else if(error.response && error.response.status===404){
+          throw new NotFoundError("User not found");
+        }
+        else {
             throw new InternalServerError("Internal Server Error");
         }
     }
