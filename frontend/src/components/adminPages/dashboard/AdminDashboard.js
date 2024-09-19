@@ -16,6 +16,8 @@ import {viewTaxSetting, createInsuranceSetting, viewInsuranceSetting, createTaxS
 
 import InsuranceSettingForm from '../update/InsuranceSettingForm';
 import TaxSettingForm from '../update/TaxSettingForm';
+import { FaUser, FaUsers, FaCity, FaBuilding, FaFileInvoice, FaMoneyBillWave, FaRegCreditCard } from 'react-icons/fa';
+
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -30,7 +32,8 @@ const AdminDashboard = () => {
   const [username, setUsername] = useState('');
   const [currentTaxPercentage, setCurrentTaxPercentage] = useState('');
   const [currentClaimDeduction, setCurrentClaimDeduction] = useState('');
-  const [currentPenaltyAmount, setCurrentPenaltyAmount] = useState('');
+  const [currentWithdrawalPenalty, setCurrentWithdrawalPenalty] = useState('');
+  const [currentLatePenalty, setCurrentLatePenalty] = useState('');
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -73,7 +76,8 @@ const AdminDashboard = () => {
 
             const insuranceData = await viewInsuranceSetting();
             setCurrentClaimDeduction(insuranceData.claimDeduction);
-            setCurrentPenaltyAmount(insuranceData.penaltyAmount);
+            setCurrentWithdrawalPenalty(insuranceData.withdrawalPenalty);
+            setCurrentLatePenalty(insuranceData.latePenalty);
         } catch (error) {
             showToast('Error Loading Dashboard Data','error');           
         }finally{
@@ -138,8 +142,9 @@ const AdminDashboard = () => {
   const handleInsuranceSubmit = async (e) => {
     try {
       const claimDeduction = parseFloat(e.claimDeduction);
-      const penaltyAmount = parseFloat(e.penaltyAmount);
-      await createInsuranceSetting({ claimDeduction, penaltyAmount });
+      const withdrawalPenalty = parseFloat(e.withdrawalPenalty);
+      const latePenalty = parseFloat(e.latePenalty);
+      await createInsuranceSetting({ claimDeduction, withdrawalPenalty, latePenalty });
       showToast('Insurance setting created successfully', 'success');
       setShowInsuranceModal(false);
     } catch (error) {
@@ -162,7 +167,8 @@ const AdminDashboard = () => {
         handleClose={() => setShowInsuranceModal(false)}
         handleSave={handleInsuranceSubmit}
         initialClaimDeduction={currentClaimDeduction}
-        initialPenaltyAmount={currentPenaltyAmount}
+        initialWithdrawalPenalty={currentWithdrawalPenalty}
+        initialLatePenalty = {currentLatePenalty}
       />
       <TaxSettingForm
         show={showTaxModal}
@@ -195,7 +201,7 @@ const AdminDashboard = () => {
       </Col>
 
       <Col xs={12} md={6} className="d-flex align-items-center justify-content-center px-3">
-        <Card className="w-100" style={{ backgroundColor: 'rgba(230, 242, 255, 0.5)' }}>
+        <Card className="w-100 h-100" style={{ backgroundColor: 'rgba(230, 242, 255, 0.5)' }}>
           <Row>
             <Col md={12} className="d-flex align-items-center justify-content-center">
               <Card.Title className="display-6 text-center">Users</Card.Title>

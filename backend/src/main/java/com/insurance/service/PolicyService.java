@@ -96,13 +96,18 @@ public class PolicyService implements IPolicyService {
         int customerAge = Period.between(customer.getDob(), LocalDate.now()).getYears();
 
         if (customerAge < insurancePlan.getMinimumAge() || customerAge > insurancePlan.getMaximumAge()) {
-            throw new IllegalArgumentException("Customer's age does not meet the requirements for the selected insurance plan.");
+            throw new ApiException("Customer's age does not meet the requirements for the selected insurance plan.");
         }
 
         if (policyRequest.getTotalInvestmentAmount() < insurancePlan.getMinimumInvestmentAmount() ||
                 policyRequest.getTotalInvestmentAmount() > insurancePlan.getMaximumInvestmentAmount()) {
                 throw new IllegalArgumentException("Total investment amount is outside the allowed range for the selected plan.");
         }
+        if(customer.getStatus()!=CreationStatusType.APPROVED) {
+        	throw new ApiException("sorry you need verification");
+        }
+        	
+        
 
         Policy policy = new Policy();
         policy.setPolicyId(uniqueIdGenerator.generateUniqueId(Policy.class));

@@ -317,7 +317,7 @@ export const activateCustomer = async (id, headers = {}) => {
     }
 
     try {
-        const response = await axios.put(`http://localhost:8081/SecureLife.com/customer/${id}/active`, null, {
+        const response = await axios.put(`http://localhost:8081/SecureLife.com/customer/${id}/activate`, null, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 ...headers
@@ -337,7 +337,7 @@ export const deactivateCustomer = async (id, headers = {}) => {
     }
 
     try {
-        const response = await axios.put(`http://localhost:8081/SecureLife.com/customer/${id}/delete`, null, {
+        const response = await axios.put(`http://localhost:8081/SecureLife.com/customer/${id}/deactivate`, null, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 ...headers

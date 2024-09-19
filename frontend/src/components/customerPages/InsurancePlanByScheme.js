@@ -61,8 +61,9 @@ const InsurancePlanByScheme = () => {
   };
 
   const handleSuccess = () => {
-    successToast('Policy registered successfully!');
     setShowModal(false);
+    successToast('Policy registered successfully!');
+   
   };
 
   return (
