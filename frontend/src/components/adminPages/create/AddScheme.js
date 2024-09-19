@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Form } from 'react-bootstrap';
 import NewToast, { showToast } from '../../../sharedComponents/NewToast';
 import Header from '../../layout/Header';
@@ -13,12 +13,13 @@ const AddSchemeForm = () => {
   const [schemeName, setSchemeName] = useState('');
   const [description, setDescription] = useState('');
   const [newRegistrationCommission, setNewRegistrationCommission] = useState('');
-  const [installmentPaymentCommission, setInstallmentPaymentCommission] = useState('');
+  const [withdrawalPenalty, setWithdrawalPenalty] = useState('');
   const [errors, setErrors] = useState({});
   const [isAdmin, setIsAdmin] = useState(null);
   const [loading, setLoading] = useState(true);
-  const {typeId} = useParams();
-    console.log(typeId);
+  const { typeId } = useParams();
+  console.log(typeId);
+
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
@@ -49,24 +50,23 @@ const AddSchemeForm = () => {
     newErrors.schemeName = required(schemeName);
     newErrors.description = required(description);
     newErrors.newRegistrationCommission = onlyPositive(newRegistrationCommission);
-    newErrors.installmentPaymentCommission = onlyPositive(installmentPaymentCommission);
+    newErrors.withdrawalPenalty = onlyPositive(withdrawalPenalty);
     setErrors(newErrors);
-    return Object.values(newErrors).every((error) => error === undefined||error==="");
+    return Object.values(newErrors).every((error) => error === undefined || error === "");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
       try {
-        await addInsuranceScheme(typeId,{
+        await addInsuranceScheme(typeId, {
           schemeName,
           description,
           newRegistrationCommission,
-          installmentPaymentCommission,
+          withdrawalPenalty,
         });
         showToast('Insurance scheme added successfully', 'success');
-        setTimeout(()=>{navigate(`/SecureLife.com/admin/types/${typeId}/schemes`)},500)
-        
+        setTimeout(() => { navigate(`/SecureLife.com/admin/types/${typeId}/schemes`); }, 500);
       } catch (error) {
         showToast('Failed to add insurance scheme. Please try again.', 'error');
       }
@@ -128,16 +128,16 @@ const AddSchemeForm = () => {
                     {errors.newRegistrationCommission}
                   </Form.Control.Feedback>
                 </Form.Group>
-                <Form.Group controlId="formInstallmentPaymentCommission" className="mb-3">
-                  <Form.Label>Installment Payment Commission</Form.Label>
+                <Form.Group controlId="formWithdrawalPenalty" className="mb-3">
+                  <Form.Label>Withdrawal Penalty</Form.Label>
                   <Form.Control
                     type="text"
-                    value={installmentPaymentCommission}
-                    onChange={(e) => setInstallmentPaymentCommission(e.target.value)}
-                    isInvalid={!!errors.installmentPaymentCommission}
+                    value={withdrawalPenalty}
+                    onChange={(e) => setWithdrawalPenalty(e.target.value)}
+                    isInvalid={!!errors.withdrawalPenalty}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.installmentPaymentCommission}
+                    {errors.withdrawalPenalty}
                   </Form.Control.Feedback>
                 </Form.Group>
                 <Button variant="primary" type="submit" className="w-100">
