@@ -1,7 +1,7 @@
 package com.insurance.response;
 
 
-import com.insurance.enums.CreationStatusType;
+import com.insurance.enums.CreationStatus;
 
 import lombok.Data;
 

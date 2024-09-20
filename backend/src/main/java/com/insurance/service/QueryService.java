@@ -18,7 +18,7 @@ import com.insurance.entities.Customer;
 import com.insurance.entities.CustomerQuery;
 import com.insurance.entities.Employee;
 import com.insurance.entities.User;
-import com.insurance.enums.CreationStatusType;
+import com.insurance.enums.CreationStatus;
 import com.insurance.exceptions.ApiException;
 import com.insurance.exceptions.ResourceNotFoundException;
 import com.insurance.interfaces.IQueryService;
@@ -67,7 +67,7 @@ public class QueryService implements IQueryService {
         if(customer==null) {
         	throw new ApiException("Customer not found");
         }
-        if(customer.getStatus()==CreationStatusType.REJECTED) {
+        if(customer.getStatus()==CreationStatus.REJECTED) {
         	throw new ApiException("Sorry you cannot post query");
         	
         }

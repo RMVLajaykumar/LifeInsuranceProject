@@ -9,7 +9,7 @@ import BackButton from '../../sharedComponents/BackButton';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import Loader from '../../sharedComponents/Loader';
-import { required, isEmail, checkSize, isAlphaNumNoSpace, isTenDigits, onlyPositive } from '../../utils/helpers/Validation';
+import { required, isEmail, checkSize, isAlphaNumNoSpace, isTenDigits} from '../../utils/helpers/Validation';
 
 const AddAgentForm = () => {
   const [formData, setFormData] = useState({
@@ -59,7 +59,7 @@ const AddAgentForm = () => {
     tempErrors.phoneNumber = required(formData.phoneNumber) || isTenDigits(formData.phoneNumber);
     tempErrors.address = required(formData.address) || checkSize(formData.address, 0, 255);
     tempErrors.name = required(formData.name) || checkSize(formData.name, 2, 100);
-    tempErrors.city_id = required(formData.city_id) || onlyPositive(formData.city_id);
+    tempErrors.city_id = required(formData.city_id) || isAlphaNumNoSpace(formData.city_id);
 
     setErrors(tempErrors);
     return Object.values(tempErrors).every(x => x === undefined || x === '');

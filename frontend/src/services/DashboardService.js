@@ -94,6 +94,7 @@ export const getCommission = async () => {
 export const getPenalty = async () => {
   try {
     const response = await api.get('/dashboard/total-penalty');
+    console.log(response.data)
     return response.data;
   } catch (error) {
     console.error('Error fetching total penalty:', error);

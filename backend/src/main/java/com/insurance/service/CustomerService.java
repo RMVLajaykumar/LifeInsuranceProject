@@ -4,22 +4,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.mail.MailAuthenticationException;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +23,7 @@ import com.insurance.entities.Customer;
 import com.insurance.entities.Employee;
 import com.insurance.entities.Role;
 import com.insurance.entities.User;
-import com.insurance.enums.CreationStatusType;
+import com.insurance.enums.CreationStatus;
 import com.insurance.exceptions.ApiException;
 import com.insurance.exceptions.ResourceNotFoundException;
 import com.insurance.exceptions.UnauthorizedException;
@@ -48,8 +42,6 @@ import com.insurance.util.Mappers;
 import com.insurance.util.PagedResponse;
 import com.insurance.util.UniqueIdGenerator;
 
-import jakarta.mail.MessagingException;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 
@@ -58,12 +50,7 @@ public class CustomerService implements ICustomerService {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomerService.class);
 
-    
-    @Autowired
-    private JavaMailSender javaMailSender;
-
-    @Value("${spring.mail.username}")
-    private String fromMail;
+   
     
     @Autowired
     Mappers mappers;
@@ -77,23 +64,22 @@ public class CustomerService implements ICustomerService {
     EmployeeRepository employeeRepository;
     @Autowired
     EmailService emailService;
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final CustomerRepository customerRepository;
-    private final CityRepository cityRepository;
+    
+    @Autowired
+    UserRepository userRepository;
+    
+    @Autowired
+    RoleRepository roleRepository;
+    
+    @Autowired
+    PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    CustomerRepository customerRepository;
+    
+    @Autowired
+    CityRepository cityRepository;
 
-    public CustomerService(UserRepository userRepository,
-                           RoleRepository roleRepository,
-                           PasswordEncoder passwordEncoder,
-                           CustomerRepository customerRepository,
-                           CityRepository cityRepository) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.customerRepository = customerRepository;
-        this.cityRepository = cityRepository;
-    }
 
     @Override
     public String registerCustomer(String token, @Valid CustomerRegisterRequest registerDto)  {
@@ -143,7 +129,6 @@ public class CustomerService implements ICustomerService {
             }
         }
 
-        // Set city and other details for the customer
         City city = cityRepository.findById(registerDto.getCityId())
                 .orElseThrow(() -> new ResourceNotFoundException("City not found"));
         customer.setCity(city);
@@ -172,32 +157,18 @@ public class CustomerService implements ICustomerService {
         logger.info("Customer registered successfully with ID: {}", customer.getCustomerId());
         return "Customer created successfully!";
     }
+
+
     @Override
     public PagedResponse<CustomerResponse> getAllCustomers(int page, int size, String sortBy, String direction, String searchQuery) {
         logger.info("Fetching all customers with pagination - page: {}, size: {}, sortBy: {}, direction: {}", page, size, sortBy, direction);
 
-        // List of valid fields for sorting
-        List<String> validSortFields = Arrays.asList("customerId", "name", "email", "phoneNumber", "status");
-
-        // Validate the sortBy field and default to 'customerId' if invalid
-        if (!validSortFields.contains(sortBy)) {
-            logger.warn("Invalid sortBy field: {}. Defaulting to 'customerId'", sortBy);
-            sortBy = "customerId";
-        }
-
-        // Create Sort object based on the direction
         Sort sort = direction.equalsIgnoreCase(Sort.Direction.DESC.name())
                 ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
-
-        // Create pageable object
         PageRequest pageable = PageRequest.of(page, size, sort);
-
-        // Fetch the page of customers using the search query
-        Page<Customer> page1 = customerRepository.findAllWithSearchQuery(searchQuery, pageable);
+        Page<Customer> page1 = customerRepository.findAllWithSearchQuery(searchQuery,pageable);
         List<Customer> customers = page1.getContent();
-
-        // Map customers to CustomerResponse DTOs
         List<CustomerResponse> customerResponses = new ArrayList<>();
         for (Customer customer : customers) {
             CustomerResponse customerResponse = mappers.customerToCustomerResponse(customer);
@@ -205,15 +176,10 @@ public class CustomerService implements ICustomerService {
         }
 
         logger.info("Fetched {} customers", customerResponses.size());
-
-        // Return the paged response with customer data
         return new PagedResponse<>(customerResponses, page1.getNumber(), page1.getSize(), page1.getTotalElements(), page1.getTotalPages(), page1.isLast());
     }
 
-
-
-    @Override
-    public String updateCustomer(String id,  CustomerRegisterRequest registerDto) {
+    public String updateCustomer(String id, @Valid CustomerRegisterRequest registerDto) {
         logger.info("Updating customer with ID: {}", id);
 
         Customer existingCustomer = customerRepository.findById(id)
@@ -223,8 +189,7 @@ public class CustomerService implements ICustomerService {
 
         if (registerDto.getUsername() != null && !registerDto.getUsername().equals(user.getUsername())) {
             if (userRepository.existsByUsername(registerDto.getUsername())) {
-                logger.warn("Username already exists: {}", registerDto.getUsername());
-                throw new ApiException("Username already exists!");
+                throw new ApiException("Username already exists!" + registerDto.getUsername());
             }
             user.setUsername(registerDto.getUsername());
         }
@@ -244,7 +209,13 @@ public class CustomerService implements ICustomerService {
         user.setUpdatedAt(LocalDateTime.now());
         String subject = "Your Account update completed  Successfully ";
         String emailBody = "Dear " + registerDto.getUsername() + ", your account has been successfully opened. Before choosing a policy, please wait for the verification email.";
-        emailService.sendEmail(user.getEmail(), subject, emailBody);
+        try {
+        	emailService.sendEmail(user.getEmail(), subject, emailBody);
+        } catch (MailAuthenticationException exc) {
+            logger.error("Failed to send email to {}: {}", user.getEmail(), exc.getMessage());
+        } finally {
+            logger.info("Customer updated successfully");
+        }
         userRepository.save(user);
 
         if (registerDto.getAddress() != null) {
@@ -263,9 +234,9 @@ public class CustomerService implements ICustomerService {
             existingCustomer.setPhoneNumber(registerDto.getPhoneNumber());
         }
 
-        if (registerDto.getDob() != null && !registerDto.getDob().isEmpty()) {  
+        if (registerDto.getDob() != null) {
             String dateStr = registerDto.getDob();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate date = LocalDate.parse(dateStr, formatter);
             existingCustomer.setDob(date);
         }
@@ -328,8 +299,7 @@ public class CustomerService implements ICustomerService {
         String username = jwtTokenProvider.getUsername(token);
         Optional<User> oUser = userRepository.findByUsernameOrEmail(username, username);
         if (oUser.isEmpty()) {
-            logger.warn("User not available for token: {}", token);
-            throw new ResourceNotFoundException("User is not available");
+            throw new UnauthorizedException("User is not available for token");
         }
         User user = oUser.get();
 
@@ -339,19 +309,23 @@ public class CustomerService implements ICustomerService {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ApiException("Customer not found"));
 
-        customer.setStatus(CreationStatusType.APPROVED);
+        customer.setStatus(CreationStatus.APPROVED);
         customer.setVerifiedBy(employee);
 
         customerRepository.save(customer);
-//        String subject = "SecureLife Insurance - Your Account Has Been Approved!";
-//        String emailBody = "Dear " + customer.getUser().getUsername() + ",\n\n" +
-//                           "Congratulations! Your account with SecureLife Insurance has been approved. " +
-//                           "You are now ready to explore and choose the best insurance policies to safeguard your future.\n\n" +
-//                           "If you need assistance, please feel free to reach out to our customer support team.\n\n" +
-//                           "Thank you for choosing SecureLife Insurance.\n\n" +
-//                           "Best Regards,\n" +
-//                           "SecureLife Insurance Team";
-//        emailService.sendEmail(customer.getUser().getEmail(), subject, emailBody);
+        String subject = "SecureLife Insurance - Your Account Has Been Approved!";
+        String emailBody = "Dear " + customer.getUser().getUsername() + ",\n\n" +
+                           "Congratulations! Your account with SecureLife Insurance has been approved. " +
+                           "You are now ready to explore and choose the best insurance policies to safeguard your future.\n\n" +
+                           "If you need assistance, please feel free to reach out to our customer support team.\n\n" +
+                           "Thank you for choosing SecureLife Insurance.\n\n" +
+                           "Best Regards,\n" +
+                           "SecureLife Insurance Team";
+        try {
+            emailService.sendEmail(customer.getUser().getEmail(), subject, emailBody);
+        } catch (MailAuthenticationException exc) {
+            logger.error("Failed to send email to {}: {}", user.getEmail(), exc.getMessage());
+        } 
         logger.info("Customer approved successfully with ID: {}", id);
         return "Customer approved Successfully";
     }
@@ -363,8 +337,7 @@ public class CustomerService implements ICustomerService {
         String username = jwtTokenProvider.getUsername(token);
         Optional<User> oUser = userRepository.findByUsernameOrEmail(username, username);
         if (oUser.isEmpty()) {
-            logger.warn("User not available for token: {}", token);
-            throw new ResourceNotFoundException("User is not available");
+            throw new UnauthorizedException("User is not available for token");
         }
         User user = oUser.get();
 
@@ -374,69 +347,72 @@ public class CustomerService implements ICustomerService {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ApiException("Customer not found"));
 
-        customer.setStatus(CreationStatusType.REJECTED);
+        customer.setStatus(CreationStatus.REJECTED);
         customer.setVerifiedBy(employee);
        
         customerRepository.save(customer);
         
-//        String subject = "SecureLife Insurance - Account Verification Rejected";
-//        String emailBody = "Dear " + customer.getUser().getUsername() + ",\n\n" +
-//                           "We regret to inform you that your account verification with SecureLife Insurance has been rejected. " +
-//                           "Please review your details and submit the necessary corrections.\n\n" +
-//                           "If you have any questions, feel free to contact our customer support team for assistance.\n\n" +
-//                           "Thank you for your interest in SecureLife Insurance.\n\n" +
-//                           "Best Regards,\n" +
-//                           "SecureLife Insurance Team";
-//
-//
-//        emailService.sendEmail(customer.getUser().getEmail(), subject, emailBody);
-        
+        String subject = "SecureLife Insurance - Account Verification Rejected";
+        String emailBody = "Dear " + customer.getUser().getUsername() + ",\n\n" +
+                           "We regret to inform you that your account verification with SecureLife Insurance has been rejected. " +
+                           "Please review your details and submit the necessary corrections.\n\n" +
+                           "If you have any questions, feel free to contact our customer support team for assistance.\n\n" +
+                           "Thank you for your interest in SecureLife Insurance.\n\n" +
+                           "Best Regards,\n" +
+                           "SecureLife Insurance Team";
+
+
+        try {
+            emailService.sendEmail(customer.getUser().getEmail(), subject, emailBody);
+        } catch (MailAuthenticationException exc) {
+            logger.error("Failed to send email to {}: {}", user.getEmail(), exc.getMessage());
+        }       
         logger.info("Customer rejected successfully with ID: {}", id);
         return "Customer rejected!!";
     }
 
 	@Override
-	public CustomerResponseForUpdate getCustomerbyId(String customer_id) {
-		 Optional<Customer> customerOpt = customerRepository.findById(customer_id);
-	        if (customerOpt.isEmpty()) {
-	            throw new ResourceNotFoundException("customer not found with ID: " + customer_id);
-	        }
-	        Customer customer = customerOpt.get();
-	        return mappers.customerToCustomerResponseForUpdate(customer);
-	    }
-	
-	@Override
-	  public PagedResponse<CustomerResponse> getMyCustomersForAgent(String token,int page, int size, String sortBy, String direction,
-	      String searchQuery) {
-	    
-	    String username = jwtTokenProvider.getUsername(token);
-	    Optional<User> user = userRepository.findByUsernameOrEmail(username, username);
-	    if(user.isEmpty()) {
-	      throw new UnauthorizedException("Unauthorized access");
-	    }
-	    Agent agent = agentRepository.findByUser(user.get());
-	    if(agent == null) {
-	      throw new UnauthorizedException("Unauthorized access");
-	    }
-	    logger.info("Fetching all customers with pagination - page: {}, size: {}, sortBy: {}, direction: {}", page, size, sortBy, direction);
+	public PagedResponse<CustomerResponse> getMyCustomersForAgent(String token,int page, int size, String sortBy, String direction,
+			String searchQuery) {
+		
+		String username = jwtTokenProvider.getUsername(token);
+		Optional<User> user = userRepository.findByUsernameOrEmail(username, username);
+		if(user.isEmpty()) {
+			throw new UnauthorizedException("Unauthorized access");
+		}
+		Agent agent = agentRepository.findByUser(user.get());
+		if(agent == null) {
+			throw new UnauthorizedException("Unauthorized access");
+		}
+		logger.info("Fetching all customers with pagination - page: {}, size: {}, sortBy: {}, direction: {}", page, size, sortBy, direction);
 
-	        Sort sort = direction.equalsIgnoreCase(Sort.Direction.DESC.name())
-	                ? Sort.by(sortBy).descending()
-	                : Sort.by(sortBy).ascending();
-	        PageRequest pageable = PageRequest.of(page, size, sort);
-	        Page<Customer> page1 = customerRepository.findByAgentWithSearchQuery(agent,searchQuery,pageable);
-	        List<Customer> customers = page1.getContent();
-	        List<CustomerResponse> customerResponses = new ArrayList<>();
-	        for (Customer customer : customers) {
-	            CustomerResponse customerResponse = mappers.customerToCustomerResponse(customer);
-	            customerResponses.add(customerResponse);
-	        }
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.DESC.name())
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        PageRequest pageable = PageRequest.of(page, size, sort);
+        Page<Customer> page1 = customerRepository.findByAgentWithSearchQuery(agent,searchQuery,pageable);
+        List<Customer> customers = page1.getContent();
+        List<CustomerResponse> customerResponses = new ArrayList<>();
+        for (Customer customer : customers) {
+            CustomerResponse customerResponse = mappers.customerToCustomerResponse(customer);
+            customerResponses.add(customerResponse);
+        }
 
-	        logger.info("Fetched {} customers", customerResponses.size());
-	        return new PagedResponse<>(customerResponses, page1.getNumber(), page1.getSize(), page1.getTotalElements(), page1.getTotalPages(), page1.isLast());
-	  }
+        logger.info("Fetched {} customers", customerResponses.size());
+        return new PagedResponse<>(customerResponses, page1.getNumber(), page1.getSize(), page1.getTotalElements(), page1.getTotalPages(), page1.isLast());
 	}
     
+	@Override
+	  public CustomerResponseForUpdate getCustomerbyId(String customer_id) {
+	     Optional<Customer> customerOpt = customerRepository.findById(customer_id);
+	          if (customerOpt.isEmpty()) {
+	              throw new ResourceNotFoundException("customer not found with ID: " + customer_id);
+	          }
+	          Customer customer = customerOpt.get();
+	          return mappers.customerToCustomerResponseForUpdate(customer);
+	 }
+}
+
 
 
 

@@ -6,7 +6,7 @@ import com.insurance.entities.Customer;
 import com.insurance.entities.Employee;
 import com.insurance.entities.Role;
 import com.insurance.entities.User;
-import com.insurance.enums.CreationStatusType;
+import com.insurance.enums.CreationStatus;
 import com.insurance.exceptions.ApiException;
 import com.insurance.exceptions.ResourceNotFoundException;
 import com.insurance.interfaces.IAuthService;

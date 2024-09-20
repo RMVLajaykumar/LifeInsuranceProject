@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.insurance.enums.CreationStatusType;
+import com.insurance.enums.CreationStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -56,7 +56,7 @@ public class Customer {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private CreationStatusType status = CreationStatusType.PENDING;
+    private CreationStatus status = CreationStatus.PENDING;
 
     @ManyToOne
     @JoinColumn(name = "agent_id", nullable = true)

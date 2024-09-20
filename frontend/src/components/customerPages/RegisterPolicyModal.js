@@ -3,6 +3,8 @@ import { Modal, Button, Form } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { registerPolicy } from '../../services/CustomerService';
 import { successToast, errorToast } from '../../sharedComponents/MyToast';
+import { isAlphaNumNoSpace} from '../../utils/helpers/Validation';
+
 
 const RegisterPolicyModal = ({ show, handleClose, planId, minTerm, maxTerm, minAge, maxAge, minInvestment, maxInvestment, customerAge, handleSuccess }) => {
   const [policyTerm, setPolicyTerm] = useState('');
@@ -24,7 +26,7 @@ const RegisterPolicyModal = ({ show, handleClose, planId, minTerm, maxTerm, minA
       policyTerm <= maxTerm &&
       totalInvestmentAmount >= minInvestment &&
       totalInvestmentAmount <= maxInvestment &&
-      (!agentId || !isNaN(agentId));
+      (!agentId || !isAlphaNumNoSpace(agentId));
     setIsFormValid(isValid);
   };
 
@@ -129,11 +131,11 @@ const RegisterPolicyModal = ({ show, handleClose, planId, minTerm, maxTerm, minA
             type="text"
             value={agentId}
             onChange={(e) => handleChange(e, setAgentId)}
-            isInvalid={agentId && isNaN(agentId)}
+            isInvalid={agentId && isAlphaNumNoSpace(agentId)}
             placeholder="Enter agent ID (optional)"
           />
           <Form.Control.Feedback type="invalid">
-            Agent ID must be a numeric value.
+            Enter valid Agent Id
           </Form.Control.Feedback>
         </Form.Group>
 

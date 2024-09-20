@@ -5,7 +5,7 @@ import com.insurance.entities.Customer;
 import com.insurance.entities.InsurancePlan;
 import com.insurance.entities.Policy;
 import com.insurance.entities.User;
-import com.insurance.enums.CreationStatusType;
+import com.insurance.enums.CreationStatus;
 import com.insurance.enums.PaymentInterval;
 import com.insurance.enums.PolicyStatus;
 import com.insurance.exceptions.ApiException;
@@ -67,7 +67,7 @@ public class PolicyService implements IPolicyService {
 	@Autowired
 	InsurancePlanRepository insurancePlanRepository;
 
-	@Override
+    @Override
     public String createPolicy(String token, PolicyRequest policyRequest) {
         String username = jwtTokenProvider.getUsername(token);
         logger.info("Creating policy for user: {}", username);
@@ -82,32 +82,32 @@ public class PolicyService implements IPolicyService {
         if (customer == null) {
             throw new ApiException("Customer not found for "+ username);
         }
-        if (customer.getStatus() == CreationStatusType.REJECTED) {
+        if (customer.getStatus() == CreationStatus.REJECTED) {
             throw new ApiException("Sorry, you cannot create a policy");
         }
         
         InsurancePlan insurancePlan = insurancePlanRepository.findById(policyRequest.getPlan_id())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid Insurance Plan ID"));
+        if(!insurancePlan.isActive()) {
+        	throw new ApiException("Insurance Plan is not active");
+        }
         if (policyRequest.getPolicyTerm() < insurancePlan.getMinimumPolicyTerm() ||
                 policyRequest.getPolicyTerm() > insurancePlan.getMaximumPolicyTerm()) {
                 throw new IllegalArgumentException("Policy term is outside the allowed range for the selected plan.");
         }
         
         int customerAge = Period.between(customer.getDob(), LocalDate.now()).getYears();
-
+        if(customer.getStatus() != CreationStatus.APPROVED) {
+        	throw new ApiException("Customer is not verified");
+        }
         if (customerAge < insurancePlan.getMinimumAge() || customerAge > insurancePlan.getMaximumAge()) {
-            throw new ApiException("Customer's age does not meet the requirements for the selected insurance plan.");
+            throw new ApiException("Age does not meet the requirements for the selected insurance plan.");
         }
 
         if (policyRequest.getTotalInvestmentAmount() < insurancePlan.getMinimumInvestmentAmount() ||
                 policyRequest.getTotalInvestmentAmount() > insurancePlan.getMaximumInvestmentAmount()) {
                 throw new IllegalArgumentException("Total investment amount is outside the allowed range for the selected plan.");
         }
-        if(customer.getStatus()!=CreationStatusType.APPROVED) {
-        	throw new ApiException("sorry you need verification");
-        }
-        	
-        
 
         Policy policy = new Policy();
         policy.setPolicyId(uniqueIdGenerator.generateUniqueId(Policy.class));
@@ -144,8 +144,7 @@ public class PolicyService implements IPolicyService {
         
         Optional<User> oUser = userRepository.findByUsernameOrEmail(username, username);
         if (oUser.isEmpty()) {
-            logger.warn("User not available for token: {}", token);
-            throw new ResourceNotFoundException("User is not available");
+            throw new UnauthorizedException("User is not available for token");
         }
 
         Page<Policy> policies = policyRepository.findAll(pageable);
@@ -165,14 +164,12 @@ public class PolicyService implements IPolicyService {
 
         Optional<User> oUser = userRepository.findByUsernameOrEmail(username, username);
         if (oUser.isEmpty()) {
-            logger.warn("User not available for token: {}", token);
-            throw new ResourceNotFoundException("User is not available");
+            throw new UnauthorizedException("User is not available for token");
         }
 
         Optional<Customer> customer = customerRepository.findById(customerId);
         if (customer.isEmpty()) {
-            logger.error("Customer not found with ID: {}", customerId);
-            throw new ResourceNotFoundException("Customer not found");
+            throw new ResourceNotFoundException("Customer not found for customerId: " + customerId);
         }
 
         Page<Policy> policies = policyRepository.findByCustomer(customer.get(), pageable);
@@ -192,17 +189,14 @@ public class PolicyService implements IPolicyService {
 
         Optional<User> oUser = userRepository.findByUsernameOrEmail(username, username);
         if (oUser.isEmpty()) {
-            logger.warn("User not available for token: {}", token);
-            throw new ResourceNotFoundException("User is not available");
+            throw new UnauthorizedException("User is not available for token");
         }
 
         Customer customer = customerRepository.findByUser(oUser.get());
         if (customer == null) {
-            logger.error("Customer not found for user: {}", username);
-            throw new ApiException("Customer not found");
+            throw new ApiException("Customer not found for " + username);
         }
-        if (customer.getStatus() == CreationStatusType.REJECTED) {
-            logger.warn("Customer with ID {} cannot fetch policies", customer.getCustomerId());
+        if (customer.getStatus() == CreationStatus.REJECTED) {
             throw new ApiException("Sorry, you cannot get your policies");
         }
 
@@ -219,7 +213,8 @@ public class PolicyService implements IPolicyService {
     private int calculateInstallmentAmount(PolicyRequest policyRequest) {
         int totalInvestmentAmount = policyRequest.getTotalInvestmentAmount();
         int policyTermInYears = policyRequest.getPolicyTerm();
-        PaymentInterval paymentInterval =PaymentInterval.valueOf(policyRequest.getPaymentInterval().toUpperCase());
+        PaymentInterval paymentInterval = PaymentInterval.valueOf(policyRequest.getPaymentInterval().toUpperCase());
+
 
         int paymentsPerYear;
         switch (paymentInterval) {
@@ -244,23 +239,21 @@ public class PolicyService implements IPolicyService {
     }
 
     @Override
-    public PagedResponse<CommissionResponse> getMyCommission(String token, Pageable pageable) {
+    public PagedResponse<CommissionResponse> getMyCommission(String token, String searchQuery, Pageable pageable) {
         String username = jwtTokenProvider.getUsername(token);
         logger.info("Fetching commissions for agent: {}", username);
 
         Optional<User> oUser = userRepository.findByUsernameOrEmail(username, username);
         if (oUser.isEmpty()) {
-            logger.warn("User not available for token: {}", token);
-            throw new ResourceNotFoundException("User is not available");
+            throw new UnauthorizedException("User is not available for token");
         }
 
         Agent agent = agentRepository.findByUser(oUser.get());
         if (agent == null) {
-            logger.error("Agent not found for user: {}", username);
-            throw new ApiException("Agent not found");
+            throw new ApiException("Agent not found for "+ username);
         }
 
-        Page<Policy> policies = policyRepository.findByAgent(agent, pageable);
+        Page<Policy> policies = policyRepository.findByAgentWithSearchQuery(agent, searchQuery, pageable);
         List<CommissionResponse> commissionResponses = policies.getContent().stream()
             .map(mappers::convertToCommissionResponse)
             .collect(Collectors.toList());
@@ -277,14 +270,12 @@ public class PolicyService implements IPolicyService {
 
         Optional<User> oUser = userRepository.findByUsernameOrEmail(username, username);
         if (oUser.isEmpty()) {
-            logger.warn("User not available for token: {}", token);
-            throw new ResourceNotFoundException("User is not available");
+            throw new UnauthorizedException("User is not available for token");
         }
 
         Optional<Agent> agent = agentRepository.findById(agentId);
         if (agent.isEmpty()) {
-            logger.error("Agent not found with ID: {}", agentId);
-            throw new ApiException("Agent not found");
+            throw new ApiException("Agent not found with agentId: " + agentId);
         }
 
         Page<Policy> policies = policyRepository.findByAgent(agent.get(), pageable);
@@ -296,15 +287,15 @@ public class PolicyService implements IPolicyService {
 
         return new PagedResponse<>(commissionResponses, policies.getNumber(), policies.getSize(), policies.getTotalElements(), policies.getTotalPages(), policies.isLast());
     }
-
-	@Override
-	public PolicyResponse getPolicybyId(String policyid) {
-		Policy policy = policyRepository.findById(policyid).orElse(null);
-		if(policy!=null) {
-			return mappers.convertToPolicyResponse(policy);
-		}
-		else {
-			throw new ApiException("Policy not found");
-		}
-	}
+    
+    @Override
+    public PolicyResponse getPolicybyId(String policyid) {
+      Policy policy = policyRepository.findById(policyid).orElse(null);
+      if(policy!=null) {
+        return mappers.convertToPolicyResponse(policy);
+      }
+      else {
+        throw new ApiException("Policy not found");
+      }
+    }
 }

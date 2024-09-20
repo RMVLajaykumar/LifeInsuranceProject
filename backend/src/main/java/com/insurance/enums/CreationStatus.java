@@ -1,6 +1,6 @@
 package com.insurance.enums;
 
-public enum CreationStatusType {
+public enum CreationStatus {
     PENDING,
     APPROVED,
     REJECTED

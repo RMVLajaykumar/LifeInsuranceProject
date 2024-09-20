@@ -23,7 +23,7 @@ const AddAgent = ({ show, handleClose, handleSave }) => {
     tempErrors.phoneNumber = required(data.phoneNumber) || isTenDigits(data.phoneNumber) || onlyPositive(data.phoneNumber);
     tempErrors.address = required(data.address) || checkSize(data.address, 0, 255);
     tempErrors.name = required(data.name) || checkSize(data.name, 2, 100);
-    tempErrors.city_id = required(data.city_id) || onlyPositive(data.city_id);
+    tempErrors.city_id = required(data.city_id) || isAlphaNumNoSpace(data.city_id);
 
     setErrors(tempErrors);
     return Object.values(tempErrors).every(x => x === undefined || x === '');

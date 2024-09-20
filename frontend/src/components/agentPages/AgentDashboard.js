@@ -12,6 +12,7 @@ import NewToast,{ showToast } from '../../sharedComponents/NewToast';
 import { verifyAgent, getUsername } from '../../services/AuthService';
 import AgentEarnings from './AgentEarnings';
 import {getSoldPolicies, getCancelledPolicies, getCommission, getPenalty} from '../../services/DashboardService';
+import { FaBan, FaFileSignature, FaUsers } from 'react-icons/fa';
 
 
 const AgentDashboard = () => {
@@ -59,6 +60,7 @@ const AgentDashboard = () => {
        setCommission(commission);
        setPenalty(penalty);
        setUsername(username);
+       console.log(penalty);
         } catch (error) {
             showToast('Error Loading Dashboard Data','error');           
         }finally{
@@ -112,8 +114,6 @@ const AgentDashboard = () => {
           <p className="text-center">{cancelledPolicies}</p> 
         </div>
       </Col>
-
-      
       <Col xs={8} className='px-5'>
         <Card.Body>
           <AgentEarnings commission={commission} penalty={penalty} />
@@ -124,16 +124,15 @@ const AgentDashboard = () => {
 </Col>
 
     </Row>
-
         <Row className="px-5 mb-5">
           <Col md={4}>
-            <DashboardCard title={"My Clients"} handleButton={handleClient} buttonText={"View Clients"}/>
+            <DashboardCard icon={<FaUsers />} title={"My Clients"} handleButton={handleClient} buttonText={"View Clients"}/>
           </Col>
           <Col md={4}>
-            <DashboardCard title={"Sold Policies"} handleButton={handleCommission} buttonText={"View Sold Policies"}/>
+            <DashboardCard icon={<FaFileSignature />} title={"Sold Policies"} handleButton={handleCommission} buttonText={"View Sold Policies"}/>
           </Col>
           <Col md={4}>
-            <DashboardCard title={"Cancelled Policies"} handleButton={handleWithdrawal} buttonText={"View Cancelled Policies"}/>
+            <DashboardCard icon={<FaBan />} title={"Cancelled Policies"} handleButton={handleWithdrawal} buttonText={"View Cancelled Policies"}/>
           </Col>        
         </Row>
 

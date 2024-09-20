@@ -620,13 +620,14 @@ export const getLastInsuranceSetting = async () => {
   }
 };
 
-export const getAllWithdrawalRequests = async () => {
+export const getAllWithdrawalRequests = async (params) => {
     try {
       const token = localStorage.getItem('token'); 
       if (!token) {
           throw new UnAuthorizedError("Please login!");
       }
       const response = await axios.get('http://localhost:8081/SecureLife.com/withdrawals', {
+        params,
         headers: {
           Authorization: `Bearer ${token}`, 
         },
@@ -720,13 +721,14 @@ export const denyClaim = async (id, headers = {}) => {
 };
 
 
-export const getAllClaims = async () =>{
+export const getAllClaims = async (params) =>{
     try {
         const token = localStorage.getItem('token'); 
         if (!token) {
             throw new UnAuthorizedError("Please login!");
         }
         const response = await axios.get('http://localhost:8081/SecureLife.com/claims', {
+          params,
           headers: {
             Authorization: `Bearer ${token}`, 
           },

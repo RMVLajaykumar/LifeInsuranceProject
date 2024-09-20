@@ -2,6 +2,8 @@ package com.insurance.response;
 
 import com.insurance.enums.ClaimStatus;
 
+import lombok.Data;
+@Data
 public class ClaimResponse {
 
     private Long claimId;
@@ -9,7 +11,7 @@ public class ClaimResponse {
     
     private String explanation;
     private ClaimStatus status;
-
+ private String customerId;
     public ClaimResponse() {
     }
 
