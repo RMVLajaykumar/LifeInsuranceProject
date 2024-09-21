@@ -66,10 +66,9 @@ public class InsuranceSchemeService implements IInsuranceSchemeService {
 
         InsuranceScheme insuranceScheme = oInsuranceScheme.get();
         insuranceScheme.setName(schemeRequest.getSchemeName());
-
-         insuranceScheme.setWithdrawalPenalty(schemeRequest.getWithdrawalPenalty());
         insuranceScheme.setNewRegistrationCommission(schemeRequest.getNewRegistrationCommission());
-               insuranceSchemeRepository.save(insuranceScheme);
+        insuranceScheme.setWithdrawalPenalty(schemeRequest.getWithdrawalPenalty());
+        insuranceSchemeRepository.save(insuranceScheme);
 
         logger.info("Insurance scheme updated successfully with ID: {}", id);
         return "Insurance Scheme Updated";
@@ -90,6 +89,7 @@ public class InsuranceSchemeService implements IInsuranceSchemeService {
         }
 
         insuranceScheme.setActive(true);
+        insuranceScheme.getInsurancePlan().setActive(true);    
         insuranceSchemeRepository.save(insuranceScheme);
 
         logger.info("Insurance scheme activated successfully with ID: {}", id);
@@ -111,6 +111,7 @@ public class InsuranceSchemeService implements IInsuranceSchemeService {
         }
 
         insuranceScheme.setActive(false);
+        insuranceScheme.getInsurancePlan().setActive(false);    
         insuranceSchemeRepository.save(insuranceScheme);
 
         logger.info("Insurance scheme deactivated successfully with ID: {}", id);
@@ -154,18 +155,18 @@ public class InsuranceSchemeService implements IInsuranceSchemeService {
         return new PagedResponse<>(insuranceSchemeResponseList, insuranceSchemePage.getNumber(), insuranceSchemePage.getSize(),
                 insuranceSchemePage.getTotalElements(), insuranceSchemePage.getTotalPages(), insuranceSchemePage.isLast());	
         }
-
-	@Override
-	public InsuranceSchemeResponse getInsuranceSchemeById(String id) {
-		 InsuranceScheme scheme= insuranceSchemeRepository.findById(id).orElse(null);
-		 if(scheme!=null) {
-			 return mappers.insuranceSchemeToInsuranceSchemeResponse(scheme);
-		 }
-		 else {
-			 throw new ResourceNotFoundException("Insurance scheme not found");
-		 }
-
 	
-	}
+	@Override
+	  public InsuranceSchemeResponse getInsuranceSchemeById(String id) {
+	     InsuranceScheme scheme= insuranceSchemeRepository.findById(id).orElse(null);
+	     if(scheme!=null) {
+	       return mappers.insuranceSchemeToInsuranceSchemeResponse(scheme);
+	     }
+	     else {
+	       throw new ResourceNotFoundException("Insurance scheme not found");
+	     }
+
+	  
+	  }
 }
 

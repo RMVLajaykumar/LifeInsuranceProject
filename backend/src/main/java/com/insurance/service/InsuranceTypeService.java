@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.insurance.entities.InsuranceScheme;
 import com.insurance.entities.InsuranceType;
 import com.insurance.exceptions.ApiException;
 import com.insurance.exceptions.ResourceNotFoundException;
@@ -73,6 +74,10 @@ public class InsuranceTypeService implements IInusranceService {
         if (insuranceType != null) {
             if (insuranceType.isActive()) {
                 insuranceType.setActive(false);
+                for(InsuranceScheme scheme:insuranceType.getInsuranceSchemes()) {
+                	scheme.setActive(false);
+                	scheme.getInsurancePlan().setActive(false);
+                }
                 insuranceTypeRepository.save(insuranceType);
 
                 logger.info("Insurance Type deactivated successfully with ID: {}", id);
@@ -95,6 +100,10 @@ public class InsuranceTypeService implements IInusranceService {
                 throw new ApiException("Type is already active");
             } else {
                 insuranceType.setActive(true);
+                for(InsuranceScheme scheme:insuranceType.getInsuranceSchemes()) {
+                	scheme.setActive(true);
+                	scheme.getInsurancePlan().setActive(true);
+                }
                 insuranceTypeRepository.save(insuranceType);
 
                 logger.info("Insurance Type activated successfully with ID: {}", id);

@@ -3,6 +3,7 @@ package com.insurance.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,6 +47,7 @@ public class InsuranceSchemeController {
     //create insurance scheme
     @PostMapping("/type/{typeId}/schemes")
     @Operation(summary= "Create Insurance Scheme -- For ADMIN")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> createInsuranceSchemes(@PathVariable String typeId, @RequestBody InsuranceSchemeRequest schemeRequest){
         String response = service.createInsuranceScheme(typeId, schemeRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -54,6 +56,7 @@ public class InsuranceSchemeController {
     //update insurance scheme
     @PutMapping("/scheme/{id}/update")
     @Operation(summary= "Update Insurance Scheme -- For ADMIN")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> updateInsuranceSchemes(@PathVariable String id,@RequestBody InsuranceSchemeRequest schemeRequest){
         String response = service.updateInsuranceScheme(id,schemeRequest);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -62,6 +65,7 @@ public class InsuranceSchemeController {
     //activate insurance scheme
     @PutMapping("/scheme/{id}/activate")
     @Operation(summary= "Activate Insurance Scheme -- For ADMIN")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> activateInsuranceSchemes(@PathVariable String id){
         String response = service.activateInsuranceScheme(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -70,6 +74,7 @@ public class InsuranceSchemeController {
     //delete insurance scheme
     @DeleteMapping("/scheme/{id}/delete")
     @Operation(summary= "Delete Insurance Scheme -- For ADMIN")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteInsuranceSchemes(@PathVariable String id){
         String response = service.deleteInsuranceScheme(id);
         return new ResponseEntity<>(response, HttpStatus.OK);

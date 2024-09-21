@@ -1,6 +1,8 @@
 import axios from 'axios';
-import { UnAuthorizedError, AlreadyExists } from '../utils/errors/Error';
-
+import { UnAuthorizedError, AlreadyExists ,ValidationError} from '../utils/errors/Error';
+const handleErrors = (error) => {
+  throw new ValidationError(error?.response?.data?.message);
+};
 
 export const registerAdmin = async (adminData) => {
   const token = localStorage.getItem('token'); 
@@ -284,7 +286,7 @@ export const registerCustomer = async (customerData) => {
     );
     return response.data;
   } catch (error) {
-    throw new Error('Network Error');
+    handleErrors(error);
   }
 };
 

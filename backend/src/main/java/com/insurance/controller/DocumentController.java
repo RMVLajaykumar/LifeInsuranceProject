@@ -62,6 +62,7 @@ public class DocumentController {
     }
     @PostMapping("policies/{policy_id}/claim/upload")
     @Operation(summary= "Upload Claim document -- BY CUSTOMER")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<String> uploadClaimDocument(HttpServletRequest request,@PathVariable String policy_id, @RequestParam("file") MultipartFile file, ClaimRequest claimRequest) throws IOException {
         if (file.isEmpty()) {
             return new ResponseEntity<>("Please select a file to upload", HttpStatus.BAD_REQUEST);

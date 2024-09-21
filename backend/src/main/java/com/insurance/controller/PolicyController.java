@@ -42,6 +42,7 @@ public class PolicyController {
 
     @GetMapping("/policies")
     @Operation(summary = "Get all Policies -- BY EMPLOYEE & ADMIN")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
     public ResponseEntity<PagedResponse<PolicyResponse>> getAllPolicies(
     		HttpServletRequest request,
             @RequestParam(name = "page", defaultValue = "0") int page,
@@ -59,6 +60,7 @@ public class PolicyController {
 
     @GetMapping("/customer/{customerId}/policies")
     @Operation(summary = "Get Policies by Customer ID -- BY EMPLOYEE & ADMIN")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
     public ResponseEntity<PagedResponse<PolicyResponse>> getPoliciesByCustomerId(
             HttpServletRequest request,
             @PathVariable String customerId,
@@ -97,6 +99,7 @@ public class PolicyController {
     }
     @GetMapping("/mycommissions")
     @Operation(summary = "Get My Commission report -- BY Agent")
+    @PreAuthorize("hasRole('AGENT')")
     public ResponseEntity<PagedResponse<CommissionResponse>> getMyCommission(
             HttpServletRequest request,
             @RequestParam(name = "page", defaultValue = "0") int page,

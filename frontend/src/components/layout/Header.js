@@ -4,13 +4,17 @@ import { Navbar, Nav, Container } from 'react-bootstrap';
 import { FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
 
 import NavLink from '../../sharedComponents/NavLink';
+import { showToast } from '../../sharedComponents/NewToast';
 
 const Header = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    navigate('/SecureLife.com/login');
+    showToast('Logout successfully','success');
+    setTimeout(()=>{
+      navigate('/SecureLife.com/login');
+    },500)
   };
 
   const handleProfile = () =>{
@@ -21,7 +25,7 @@ const Header = () => {
   return (
     <Navbar className="shadow-sm" style={{backgroundColor:'rgba(193, 220, 220, 0.5)'}}>
       <Container>
-        <Navbar.Brand href="/" className="font-weight-bold text-primary">
+        <Navbar.Brand href='/' className="font-weight-bold text-primary">
           SecureLife
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />

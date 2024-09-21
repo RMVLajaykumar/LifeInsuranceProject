@@ -6,7 +6,7 @@ import Header from '../../layout/Header';
 import Footer from '../../layout/Footer';
 import NewToast, { showToast } from '../../../sharedComponents/NewToast';
 import BackButton from '../../../sharedComponents/BackButton';
-import { required, checkSize, onlyPositive,greaterThan } from '../../../utils/helpers/Validation';
+import { isInRange, greaterThan, onlyPositive } from '../../../utils/helpers/Validation';
 
 const InsurancePlanForm = () => {
   const { schemeId } = useParams();
@@ -53,18 +53,26 @@ const InsurancePlanForm = () => {
   const validateForm = () => {
     const newErrors = {};
   
-    newErrors.minimumPolicyTerm =  onlyPositive(planDetails.minimumPolicyTerm);
-    newErrors.maximumPolicyTerm = onlyPositive(planDetails.maximumPolicyTerm) || greaterThan(planDetails.minimumPolicyTerm, planDetails.maximumPolicyTerm);
-    newErrors.minimumAge = onlyPositive(planDetails.minimumAge);
-    newErrors.maximumAge = onlyPositive(planDetails.maximumAge) || greaterThan(planDetails.minimumAge, planDetails.maximumAge);
-    newErrors.minimumInvestmentAmount = onlyPositive(planDetails.minimumInvestmentAmount);
-    newErrors.maximumInvestmentAmount = onlyPositive(planDetails.maximumInvestmentAmount) || greaterThan(planDetails.minimumInvestmentAmount, planDetails.maximumInvestmentAmount);
-    newErrors.profitRatio = onlyPositive(planDetails.profitRatio);
+    newErrors.minimumPolicyTerm = onlyPositive(planDetails.minimumPolicyTerm) || 
+                                  greaterThan(planDetails.minimumPolicyTerm, planDetails.maximumPolicyTerm);
+    newErrors.maximumPolicyTerm = onlyPositive(planDetails.maximumPolicyTerm);
+  
+    newErrors.minimumAge = onlyPositive(planDetails.minimumAge) || 
+                           greaterThan(planDetails.minimumAge, planDetails.maximumAge);
+    newErrors.maximumAge = onlyPositive(planDetails.maximumAge);
+  
+    newErrors.minimumInvestmentAmount = onlyPositive(planDetails.minimumInvestmentAmount) || 
+                                        greaterThan(planDetails.minimumInvestmentAmount, planDetails.maximumInvestmentAmount);
+    newErrors.maximumInvestmentAmount = onlyPositive(planDetails.maximumInvestmentAmount);
+  
+    newErrors.profitRatio = onlyPositive(planDetails.profitRatio) || isInRange(planDetails.profitRatio,0,2);
   
     setErrors(newErrors);
   
     return Object.values(newErrors).every((error) => error === undefined || error === "");
   };
+  
+  
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -89,7 +97,7 @@ const InsurancePlanForm = () => {
   return (
     <Container fluid className="d-flex flex-column min-vh-100 px-0">
       <Header />
-      <Container fluid className="py-5 d-flex justify-content-center align-items-center" style={{ backgroundColor: 'rgba(230, 242, 255, 0.5)' }}>
+      <Container fluid className="py-5 d-flex justify-content-center align-items-center min-vh-100" style={{ backgroundColor: 'rgba(230, 242, 255, 0.5)' }}>
         <Row className="w-100 justify-content-center">
           <Col md={8}>
             <Card className="p-4 shadow-lg" style={{ backgroundColor: 'rgba(230, 242, 255, 0.85)' }}>
@@ -108,7 +116,7 @@ const InsurancePlanForm = () => {
                           isInvalid={!!errors.minimumPolicyTerm}
                         />
                         <Form.Control.Feedback type="invalid">
-                          {errors.minimumPolicyTerm}
+                        {"Minimum Policy term should be less than Maximum Policy term"}
                         </Form.Control.Feedback>
                       </Form.Group>
                     </Col>
@@ -122,9 +130,6 @@ const InsurancePlanForm = () => {
                           onChange={handleChange}
                           isInvalid={!!errors.maximumPolicyTerm}
                         />
-                        <Form.Control.Feedback type="invalid">
-                          {errors.maximumPolicyTerm}
-                        </Form.Control.Feedback>
                       </Form.Group>
                     </Col>
                   </Row>
@@ -141,7 +146,7 @@ const InsurancePlanForm = () => {
                           isInvalid={!!errors.minimumAge}
                         />
                         <Form.Control.Feedback type="invalid">
-                          {errors.minimumAge}
+                          {"Minimum age should be less than Maximum age"}
                         </Form.Control.Feedback>
                       </Form.Group>
                     </Col>
@@ -155,9 +160,6 @@ const InsurancePlanForm = () => {
                           onChange={handleChange}
                           isInvalid={!!errors.maximumAge}
                         />
-                        <Form.Control.Feedback type="invalid">
-                          {errors.maximumAge}
-                        </Form.Control.Feedback>
                       </Form.Group>
                     </Col>
                   </Row>
@@ -173,7 +175,7 @@ const InsurancePlanForm = () => {
                           isInvalid={!!errors.minimumInvestmentAmount}
                         />
                         <Form.Control.Feedback type="invalid">
-                          {errors.minimumInvestmentAmount}
+                          {"Minimum investment amount should be less than Maximum investment amount"}
                         </Form.Control.Feedback>
                       </Form.Group>
                     </Col>
@@ -187,9 +189,6 @@ const InsurancePlanForm = () => {
                           onChange={handleChange}
                           isInvalid={!!errors.maximumInvestmentAmount}
                         />
-                        <Form.Control.Feedback type="invalid">
-                          {errors.maximumInvestmentAmount}
-                        </Form.Control.Feedback>
                       </Form.Group>
                     </Col>
                   </Row>

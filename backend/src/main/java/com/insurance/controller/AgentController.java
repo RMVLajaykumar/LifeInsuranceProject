@@ -82,7 +82,7 @@ public class AgentController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //get all agents
+    
     @GetMapping("/agents")
     @Operation(summary = "Get all agents -- BY ADMIN & EMPLOYEE")
     @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")

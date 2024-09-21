@@ -18,7 +18,7 @@ public interface IAuthService {
 
 	String changePassword(String token, ChangePasswordRequest profileRequest);
 
-	String getName(String token);
+	
 
 	ProfileResponse getProfile(String token);
 

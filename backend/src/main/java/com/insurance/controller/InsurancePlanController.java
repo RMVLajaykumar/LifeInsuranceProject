@@ -3,6 +3,7 @@ package com.insurance.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,6 +53,7 @@ public class InsurancePlanController {
     //create insurance plan
     @PostMapping("/scheme/{schemeId}/plan")
     @Operation(summary= "Create Insurance Plans -- For ADMIN")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> createInsurancePlan(@PathVariable String schemeId,@RequestBody InsurancePlanRequest planRequest) {
         String response = service.createInsurancePlan(schemeId, planRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -60,6 +62,7 @@ public class InsurancePlanController {
     //update insurance plan
     @PutMapping("/scheme/{schemeId}/plan")
     @Operation(summary= "Update Insurance Plans -- For ADMIN")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> updateInsurancePlan(@PathVariable String schemeId, @RequestBody InsurancePlanRequest planRequest) {
         String response = service.updateInsurancePlan(schemeId, planRequest);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -68,6 +71,7 @@ public class InsurancePlanController {
     //activate insurance plan
     @PutMapping("/plan/{id}/activate")
     @Operation(summary= "Activate Insurance Plans -- For ADMIN")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> activateInsurancePlan(@PathVariable String id) {
         String response = service.activateInsurancePlan(id);
         return new ResponseEntity<>(response, HttpStatus.OK);

@@ -40,7 +40,7 @@ public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    // Build Login REST API
+    
     @PostMapping("/login")
     @Operation(summary = "Login  -- For All")
     public ResponseEntity<JWTAuthResponse> login(@RequestBody LoginDto loginDto){

@@ -13,6 +13,7 @@ public class InsuranceSchemeResponse {
     private double withdrawalPenaltyForAgent;
     private boolean isActive;
     private String insuranceType;
+    private String description;
 
 
 }

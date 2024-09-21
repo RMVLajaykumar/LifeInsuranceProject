@@ -71,13 +71,15 @@ public class CustomerController {
   }
   
   @PutMapping("/customer/{id}/update")
-  @Operation(summary = "Update customer -- BY EMPLOYEE & ADMIN")  
+  @Operation(summary = "Update customer -- BY EMPLOYEE & ADMIN")
+  @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
   public ResponseEntity<String> updateCustomer(@PathVariable("id") String id, @RequestBody CustomerRegisterRequest registerDto) {
       String response = service.updateCustomer(id, registerDto);
       return new ResponseEntity<>(response, HttpStatus.OK);
   }
   
   @PutMapping("/customer/{id}/deactivate")
+  @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
   @Operation(summary = "Activate customer -- BY EMPLOYEE & ADMIN")
   public ResponseEntity<String> deactivateCustomer(@PathVariable("id") String id) {
       String response = service.deactivateCustomer(id);
@@ -85,6 +87,7 @@ public class CustomerController {
   }
   
   @PutMapping("/customer/{id}/activate")
+  @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
   @Operation(summary = "Activate customer -- BY EMPLOYEE & ADMIN")
   public ResponseEntity<String> activateCustomer(@PathVariable("id") String id) {
       String response = service.activateCustomer(id);
