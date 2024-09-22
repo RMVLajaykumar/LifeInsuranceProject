@@ -38,7 +38,7 @@ public class CityController {
   
     @PostMapping("/cities")
     @Operation(summary = "Register City -- BY ADMIN")
-    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> createCity(HttpServletRequest request,@RequestBody CityRequest cityRequest){
     	String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {

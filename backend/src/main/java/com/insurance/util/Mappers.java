@@ -217,6 +217,7 @@ public class Mappers {
 			        policyResponse.setPaymentInterval(policy.getPaymentInterval());
 			        policyResponse.setStatus(policy.getStatus());
 			        policyResponse.setPolicyName(policy.getPlan().getInsuranceScheme().getName());
+			        policyResponse.setTotalAmountPaid(policy.getTotalAmountPaid());
 
 			        return policyResponse;
 			    }

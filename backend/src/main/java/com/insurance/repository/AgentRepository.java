@@ -15,7 +15,7 @@ public interface AgentRepository extends JpaRepository<Agent, String>{
 	Agent findByUser(User user);
 	
 	@Query("SELECT a FROM Agent a " +
-		       "JOIN a.user u " +  // Assuming you have a relationship between Agent and User (user is a field in Agent)
+		       "JOIN a.user u " + 
 		       "WHERE (:searchQuery IS NULL OR " +
 		       "LOWER(a.name) LIKE LOWER(CONCAT('%', :searchQuery, '%')) OR " +
 		       "LOWER(a.agentId) LIKE LOWER(CONCAT('%', :searchQuery, '%')) OR " +

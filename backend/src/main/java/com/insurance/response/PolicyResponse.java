@@ -30,6 +30,8 @@ public class PolicyResponse {
     
     //private  Double totalAmountPaid;
     
+    private double totalAmountPaid;
+    
     private PolicyStatus status;
   //  private LocalDate nextPaymentDate;
 	

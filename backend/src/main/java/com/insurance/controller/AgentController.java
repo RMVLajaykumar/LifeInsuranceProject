@@ -56,7 +56,7 @@ public class AgentController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
     
-    // delete agent
+   
     @PutMapping("/agent/{agent_id}/deactivate")
     @Operation(summary = "Delete agent -- BY ADMIN & EMPLOYEE")
     @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
@@ -73,7 +73,7 @@ public class AgentController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // activate agent
+  
     @PutMapping("/agent/{agent_id}/active")
     @Operation(summary = "Activate agent -- BY ADMIN & EMPLOYEE")  
     @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
